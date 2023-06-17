@@ -1,1 +1,3 @@
 Tested on Linuxmint 20.03. This mint is based on ubuntu 20.04 which is an important thing to know so that the correct versions of required Dell software will install correctly.
+1  IPMItool is definately required. IPMITOOL should be available on most linux default software repos.
+2  Possibly requires Dell RACADM package. I had RACADM already installed so I cannot test if it is actully needed until my next reinstall of linux from scratch. I will confirm this this later or somebody else can try.
