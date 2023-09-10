@@ -1,18 +1,18 @@
-lets plan the steps required to build this program.
-Will this be a program binary, script, or plugin? I think bash may simplest.
-Created for a linux host os but I will adapt it to run on Windows host too. I have notes.
+1st off, I could really use some community assistance to make this a reality.
+
+Created for a linux host os but we should adapt it to run on Windows host too. I have notes.
 I will use my Dell Poweredge r730xd with Nvidia gtx-1050 installed to test.
-Figure out how to dtect Nvidia, read heat value and control Nvidia fan by cli if present as well. Do not halt.
-Add AMD fan control later when I have one to test.
-So far This program needs both Dell racadm AND the opensource ipmitool. Will need more for GPU support later.
-Need to Freeze updates to a point before Dell firmware blocked customization via ipmitool. Keep less than iDrac version 3.34.34.34 This happened during 14th Gen and might effect 13th or earlier systems too.
-I need to gather current cpu temps,
+detect Nvidia, read heat value and control Nvidia fan and the righthand set of fans that push air towards the gpu.
+We will Add AMD fan controls later when I have one to test.
+So far This program needs both Dell racadm AND the opensource ipmitool for the case fans. I haven't figured GPU support yet.
+Need to Freeze updates to a point before Dell firmware blocked customization via ipmitool. IPMItool must be <1.18. iDrac version cannot be greater than 3.34.34.34.
+Gather current both cpu temps,
 import those current cpu temps into two variables,
 deine a safe cputemp range, (consult Intel for that data)
-define a quiet idling fan speed,
-consider using cpu usage to predict temps rising and adjust speeds before temp rises to make this program "smarter".
-Consider same things with io usage to keep drives and raid cards cooler too for the moment.
-Theres many senors and many different commands to pull the same or different data.
+define a quiet idling fan speed, (0x15)
+consider using cpu load to predict temps rising and adjust speeds before temp rises to make this program "smarter".
+Consider hard drive io usage to keep drives and raid cards cooler too for the moment.
+Theres many senors and many different commands to pull the different data.
 
 below is a great starting point.....
 ----
@@ -22,18 +22,24 @@ command to disable 3rd party addon card response. Dell has made this possible us
 ----
 command to set manual fan speed. Note its position, 2nd from last here. 0x01=manual, 0x00=is to use automatic idrac settings. The command is:
 
--$ sudo /usr/bin/ipmitool raw 0x30 0x30 0x01 0x00
-
+-(UBUNTU) $ sudo /usr/bin/ipmitool raw 0x30 0x30 0x01 0x00
+or
+-(debian bullseye) $ sudo /usr/local/share/ipmitool raw 0x30 0x30 0x01 0x00
+(**just search where ipmitool is located on your system and adjust path accordingly**)
 ----
 command to set fan speed. It can be set in one of 65 steps. Each step is a pwm percentage of the default dell fan models' max speed. written in hexadecimal. Values are from 0x00 to 0x64, Example: 0x00=0% (off) and 0x11=11% of maximum speed. Maximum speed is a wopping 17000 rpm. Note position is 5th value (last). The command is:
 
--$ sudo /usr/bin/ipmitool raw 0x30 0x30 0x02 0xFF 0x11
-
+-$ sudo /usr/local/share/ipmitool raw 0x30 0x30 0x02 0xFF 0x11
 ----
-optional command. There are only 6 fans controlled within the case. You can choose to set the speed of any one fan or select all. The individual fan number is chosen by its in hex value 1-6, or 0xFF for all 6 fans. This could be helpfull in just adjusting the fans for a single hot cpu or maybe the mini perc raid card side if needed. iDrac just cranks thm all up but it is possible to be very selective which is where I see this program eventually getting to. Note the position here is 4th value. The command is:
+optional command. There are only 6 fans controlled within the case. You can choose to set the speed of any one fan or select all. The individual fan number is chosen by its in hex value 1-6, or 0xFF for all 6 fans. This could be helpfull in just adjusting the fans for a single hot cpu, the mini perc raid card (Rt.side), or gpu placement, if needed. why? iDrac just cranks them all up but it is possible to be very selective which is where I see this program eventually getting to. Note the position here is 4th value. The command is:
 
--$ sudo /usr/bin/ipmitool raw 0x30 0x30 0x02 0xFF 0x11
+-$ sudo /usr/local/share/ipmitool raw 0x30 0x30 0x02 0xFF 0x11
 ----
 
-2 do list next, There seems to be 5 raw ipmi values. Can these be combined?
-Investigate that 3rd value. Why is it a 0x02 in speed control and not 0x01? also why is 4th value 0x00 and not 0xFF in manual/auto selector command. Back in few days with the answers.
+Questions,
+There seems to be 5 raw ipmi values. Can these be combined?
+Investigate that 3rd value. Why is it a 0x02 in speed control and not 0x01? also why is 4th value 0x00 and not 0xFF in manual/auto selector command. Back later, hopefully, with the answers.
+
+Oberservations 09-2023
+my 730 never seems to go above 9% cpu load. even if using all cpu to encode av1 media. I dont understand why but the temps always stay below 45 degrees.
+i think i could use this script to keep fine tuned quiet upto 45 degrees then then temporailly release to the dell loud speeds if above 45 degrees. Go back to quiet mode once temps become low <45 again.
