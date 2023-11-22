@@ -1,0 +1,4 @@
+get os name to determine where ipmitool was installed then create dir rules for commands
+  or
+search for ipmitool binary file then assign that path a variable.
+  set this program to run as su. I dont want it asking for a password when sudo is called.
