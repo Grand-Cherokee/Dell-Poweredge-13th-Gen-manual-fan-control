@@ -22,18 +22,21 @@ command to disable 3rd party addon card response. Dell has made this possible us
 ----
 command to set manual fan speed. Note its position, 2nd from last here. 0x01=manual, 0x00=is to use automatic idrac settings. The command is:
 
--(UBUNTU) $ sudo /usr/bin/ipmitool raw 0x30 0x30 0x01 0x00
+-(if UBUNTU 22.x) $ sudo /usr/bin/ipmitool raw 0x30 0x30 0x01 0x00
 or
--(debian bullseye) $ sudo /usr/local/share/ipmitool raw 0x30 0x30 0x01 0x00
+-(if debian 11.x bullseye) $ sudo /usr/local/share/ipmitool raw 0x30 0x30 0x01 0x00
+-(if debian 12.x bookworm) $ sudo /usr/local/bin/ipmitool raw raw 0x30 0x30 0x01 0x00
 (**just search where ipmitool is located on your system and adjust path accordingly**)
 ----
-command to set fan speed. It can be set in one of 65 steps. Each step is a pwm percentage of the default dell fan models' max speed. written in hexadecimal. Values are from 0x00 to 0x64, Example: 0x00=0% (off) and 0x11=11% of maximum speed. Maximum speed is a wopping 17000 rpm. Note position is 5th value (last). The command is:
+command to set fan speed. It can be set in one of 65 steps. Each step is a pwm percentage of the default dell fan models' max speed. written in hexadecimal.
+Values are from 0x00 to 0x64, Example: 0x00=0% (off) and 0x11=12% of maximum speed. Maximum speed is a wopping 17000 rpm. Note position is 5th value (last). The command is:
 
--$ sudo /usr/local/share/ipmitool raw 0x30 0x30 0x02 0xFF 0x11
+-$ sudo /usr/local/bin/ipmitool raw 0x30 0x30 0x02 0xFF 0x11
 ----
 optional command. There are only 6 fans controlled within the case. You can choose to set the speed of any one fan or select all. The individual fan number is chosen by its in hex value 1-6, or 0xFF for all 6 fans. This could be helpfull in just adjusting the fans for a single hot cpu, the mini perc raid card (Rt.side), or gpu placement, if needed. why? iDrac just cranks them all up but it is possible to be very selective which is where I see this program eventually getting to. Note the position here is 4th value. The command is:
 
--$ sudo /usr/local/share/ipmitool raw 0x30 0x30 0x02 0xFF 0x11
+-$ sudo /usr/local/bin/ipmitool raw 0x30 0x30 0x02 0x04 0x11
+above: 0x04 represents fan 5
 ----
 
 Questions,
