@@ -1,0 +1,9 @@
+set manual fan control for all fans (0xFF) = on
+get current 'average cpu temp' = "acput"
+if acput>50C then turn manual control off
+if acput<40C then set fan speed = 10% 0x09
+if acput >=40C then set fan speed 12% 0x11
+if acput >=41C then set fan speed 13% 0x12
+if acput >=42C then set fan speed 14% 0x13
+...etc.. until 50C then switch dell auto fan speed on
+wait 10 seconds then go to back to begining of loop
