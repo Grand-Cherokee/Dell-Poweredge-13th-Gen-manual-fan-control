@@ -1,24 +1,47 @@
-1st off, I could really use some community assistance to make this a reality.
+1st off, I really need some community support to learn how do the programming to make this a reality. Its basic stuff but I am 30+ years outta touch.
+My last venture was making software for the commodore vic-20 using commodare BASIC or their Proprietary assembly language. My role was called "systems analyst"
+Yes, this was a thing back in the day when calculators were only for rich kids and were considered cheating if used in school. That was before my lifelong
+career as a musician rockstar multidad. 
 
-Created for a linux host os but we should adapt it to run on Windows host too. I have notes.
-I will use my Dell Poweredge r730xd with Nvidia gtx-1050 installed to test.
-detect Nvidia, read heat value and control Nvidia fan and the righthand set of fans that push air towards the gpu.
-We will Add AMD fan controls later when I have one to test.
-So far This program needs both Dell racadm AND the opensource ipmitool for the case fans. I haven't figured GPU support yet.
-Need to Freeze updates to a point before Dell firmware blocked customization via ipmitool. IPMItool must be <1.18. iDrac version cannot be greater than 3.34.34.34.
-Gather current both cpu temps,
-import those current cpu temps into two variables,
-deine a safe cputemp range, (consult Intel for that data)
-define a quiet idling fan speed, (0x15)
-consider using cpu load to predict temps rising and adjust speeds before temp rises to make this program "smarter".
-Consider hard drive io usage to keep drives and raid cards cooler too for the moment.
-Theres many senors and many different commands to pull the different data.
+Object here is to create fanspeed software for a Dell Poweredge r730xd running a debian 12 based linux desktop deployed as a server providing
+file shares and virtual machine which I used at home.
+Planning, Just to a nice guy and make things xtra difficult, I want to adapt it to run on Windows hosts too for those people.
 
-below is a great starting point.....
+I have made some notes here.
+I will use my Dell Poweredge r730xd which has an Nvidia gtx-1050 installed. I think it represents an average homelab server. It's what I have, whats availble to me, 
+and will be dell specific. I hope HP,Supermicro, and later Dell owners will adapt the ipmi RAW commands to suit their system, fork off, and document changes.
+To start we need to....
+Determine the needed airflow...
+  I like to keep internal components under 60 degrees celcius.
+Determine vendor helpfull software...
+  This program needs both Dell racadm AND the opensource ipmitool < 1.18.18 for the case fans.
+  I need to Freeze updates to a point before Dell rewrote their firmware so that it now blocked fan customization via ipmitool.
+  To achieve this we need to freeze IPMItool at 1.18.18. and keep Dell iDrac firmware version no greater than 3.34.34.34. Otherwise you will find that Dell has
+disabled any customer intervention forcing you to be Dell vendor Locked in.
+    FYI: (Open Rack certified) designed form factors are the future of servers, Our beloved big manufacturers gotta keep trying like hell to create an artificially
+anti-trust monopoly on everything. From hardware to software and every which way in between (example: using standard connectors with nonstandard wiring to cause a short circuit).
+It's truely deceitful to force scare you into using only their product without documenting a wiring hazard. But, thats another discussion best left elsewhere.
+
+So, we need to gather our current cpu temps,
+and import those into variables,
+define a safe cputemp range, (I'd say upto 55 Degrees celcius)
+define our super quiet idling fan speed, (I'd say 0x12)
+Decide, should I consider using cpu load to predict temps rising and adjust speeds before temp rises to make this program "smarter"?
+Or, Just use real-time data?
+Where do I get the current temp data? From log, or from sensors?
+How do I get data? using the "Watch" shell command, or grep from log repeatedly? Whats most efficient? I dont wanna tie up an entire cpu thread just for this so the 
+"watch" cli seems a poor choice.."for x loop" in basic seems just as ugly..
+
+Even smarter we should Consider hard drive io usage or temps to keep drives and raid cards cooler. Each fan is configurable therfore we can modulate airflow where
+its needed. Theres many many senors, and many different commands to pull the different data into text. I just dont know how to place it in a variable instead.
+
+below commanands are a starting point.....
 ----
-command to disable 3rd party addon card response. Dell has made this possible using racadm. The command is:
+command to disable "DELL Vendor Lock-In". This allows owners to use 3rd party addon cards without locking fanspeed to max rpm.
+Dell required max cooling to be enforced so that non-certified hardware doesn't blow up your expensive DELL server. You can override this using dell "racadm".
+The command to override this behavior is:
 
--$ sudo racadm set system.thermalsettings.ThirdPartyPCIFanResponse 0
+$ sudo racadm set system.thermalsettings.ThirdPartyPCIFanResponse 0
 ----
 command to set manual fan speed. Note its position, 2nd from last here. 0x01=manual, 0x00=is to use automatic idrac settings. The command is:
 
@@ -43,3 +66,10 @@ Investigate that 3rd value. Why is it a 0x02 in speed control and not 0x01? also
 Oberservations 09-2023
 my 730 never seems to go above 9% cpu load. even if using all cpu to encode av1 media. I dont understand why but the temps always stay below 45 degrees.
 i think i could use this script to keep fine tuned quiet upto 45 degrees then then temporailly release to the dell loud speeds if above 45 degrees. Go back to quiet mode once temps become low <45 again.
+
+
+
+addendum:
+I haven't quite figured standardised GPU cooling support yet.
+I should detect Nvidia temps, read cards temps. Control Nvidia fan and the righthand set of server fans to push air towards the gpu as needed.
+We will Add Intel arc and AMD fan speeds later when I have one to test.
